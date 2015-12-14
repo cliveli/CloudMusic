@@ -11,5 +11,5 @@ usage:
     keyword:
         playlist id when type is playlistid
         keyword when type is other
-    savepath
+    savepath:
         local path to save songs
