@@ -85,6 +85,7 @@ def get_playlist_by_id(id):
     if resp_json['code'] == 200:
         return resp_json['result']
     else:
+        print 'ERROR: not found playlist_id:%s' % id
         return None
 
 #def get_artist_by_id(id):
@@ -139,6 +140,7 @@ def search_playlists_by_keyword(name):
     if resp_json['code'] == 200 and resp_json['result']['playlistCount'] > 0:
         return resp_json['result']['playlists']
     else:
+        print 'ERROR: not found playlist:%s' % to_str(name)
         return None
 
 def search_artists_by_keyword(name):
@@ -175,6 +177,7 @@ def search_albums_by_keyword(name):
         result = resp_json['result']
         return result['albums']
     else:
+        print 'ERROR: not found album:%s' % to_str(name)
         return None
 
 #根据歌曲名查找歌曲
@@ -194,18 +197,21 @@ def search_songs_by_keyword(name):
         result = resp_json['result']
         return result['songs']
     else:
+        print 'ERROR: not found song:%s' % to_str(name)
         return None
 
 def download_playlist_by_id(id, folder='.'):
     #根据playlist_id获取playlist详情
     playlist = get_playlist_by_id(id)
+    if playlist is None:
+        return
     download_playlist_by_detial(playlist,folder)
 
 def download_playlist_by_detial(playlist, folder='.'):
+    if playlist is None:
+        return
     #print playlist
     print '[Start] creator:%s\tplaylist:%s' % (to_str(playlist['creator']['nickname']), to_str(playlist['name']))
-    #根据playlist_id获取playlist详情
-    playlist = get_playlist_by_id(playlist['id'])
     songs = playlist['tracks']
     for song in songs:
         #playlist详情内含有完整的song
@@ -215,12 +221,15 @@ def download_playlist_by_detial(playlist, folder='.'):
 def download_album_by_id(id, folder='.'):
     #根据album_id获取album详情
     album = get_album_by_id(id)
+    if album is None:
+        return
     download_album_by_detial(album,folder)
 
 def download_album_by_detial(album, folder='.'):
     #print album
+    if album is None:
+        return
     print '[Start] artist:%s\talbum:%s' % (to_str(album['artist']['name']), to_str(album['name']))
-    #根据album_id获取album详情
     songs = album['songs']
     for song in songs:
         #album详情内含有完整的song
@@ -234,6 +243,8 @@ def download_song_by_id(id, folder='.'):
 #下载歌曲到指定目录
 def download_song_by_detial(song, folder='.'):
     #print str(song)
+    if song is None:
+        return
     #首先创建专辑目录
     song_album = to_valid_path(song['album']['name'].strip())
     folder = os.path.join(folder, song_album)
@@ -349,7 +360,6 @@ def download_song_by_search(name, folder='.'):
     #查找
     songs = search_songs_by_keyword(name)
     if not songs:
-        print 'ERROR: Not found ' + to_str(name)
         return
 
     if not os.path.exists(folder):
@@ -379,7 +389,6 @@ def download_song_by_search(name, folder='.'):
 def download_album_by_search(name, folder='.'):
     albums = search_albums_by_keyword(name)
     if not albums:
-        print 'Not found ' + to_str(name)
         return
 
     for i in range(len(albums)):
@@ -404,7 +413,6 @@ def download_album_by_search(name, folder='.'):
 def download_playlist_by_search(name, folder='.'):
     playlists = search_playlists_by_keyword(name)
     if not playlists:
-        print 'Not found ' + to_str(name)
         return
 
     for i in range(len(playlists)):
