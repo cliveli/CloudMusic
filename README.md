@@ -1,8 +1,8 @@
 CloudMusic
 =================
 
-usage:
-   python ClouldMusic.py <type> <keyword> <savepath> </br>
+usage:  
+python ClouldMusic.py `type` `keyword` `savepath`  
 * type:  
    * song  
    * album  
