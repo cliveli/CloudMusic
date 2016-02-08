@@ -67,6 +67,7 @@ def get_song_by_id(id):
     json_resp = json.loads(resp.read())
     return json_resp['songs'][0]
 
+# 根据专辑ID获取专辑
 # Full request URI: http://music.163.com/api/album/2457012?ext=true&id=2457012&offset=0&total=true&limit=10
 # URL：GET http://music.163.com/api/album/专辑ID
 def get_album_by_id(id):
@@ -75,6 +76,7 @@ def get_album_by_id(id):
     json_resp = json.loads(resp.read())
     return json_resp['album']
 
+# 根据歌单id获取歌单
 def get_playlist_by_id(id):
     # URL：GET http://music.163.com/api/playlist/detail
     # 必要参数：
@@ -107,6 +109,7 @@ def get_playlist_by_id(id):
     # type：值为mp4，视频格式，不清楚还有没有别的格式
 
 
+# 获取某个艺术家的专辑
 # Full request URI: http://music.163.com/api/artist/albums/166009?id=166009&offset=0&total=true&limit=5
 # URL：GET http://music.163.com/api/artist/albums/歌手ID
 # 必要参数：
@@ -124,6 +127,7 @@ def get_artist_albums(id):
             break
     return albums
 
+# 根据关键词搜索歌单
 def search_playlists_by_keyword(name):
     search_url = 'http://music.163.com/api/search/get'
     # type：搜索的类型 歌曲 1 专辑 10 歌手 100 歌单 1000 用户 1002 mv 1004 歌词 1006 主播电台 1009
@@ -143,6 +147,7 @@ def search_playlists_by_keyword(name):
         print 'ERROR: not found playlist:%s' % to_str(name)
         return None
 
+# 根据关键词搜索艺术家
 def search_artists_by_keyword(name):
     search_url = 'http://music.163.com/api/search/get'
     params = {
@@ -160,6 +165,7 @@ def search_artists_by_keyword(name):
     else:
         return None
 
+# 根据关键词搜索专辑
 def search_albums_by_keyword(name):
     search_url = 'http://music.163.com/api/search/get'
     params = {
@@ -180,7 +186,7 @@ def search_albums_by_keyword(name):
         print 'ERROR: not found album:%s' % to_str(name)
         return None
 
-#根据歌曲名查找歌曲
+#根据关键词查找歌曲
 def search_songs_by_keyword(name):
     search_url = 'http://music.163.com/api/search/get'
     params = {
@@ -200,6 +206,7 @@ def search_songs_by_keyword(name):
         print 'ERROR: not found song:%s' % to_str(name)
         return None
 
+# 根据歌曲id下载歌曲
 def download_playlist_by_id(id, folder='.'):
     #根据playlist_id获取playlist详情
     playlist = get_playlist_by_id(id)
@@ -207,6 +214,7 @@ def download_playlist_by_id(id, folder='.'):
         return
     download_playlist_by_detial(playlist,folder)
 
+# 根据歌曲详情<内含歌曲链接>下载歌曲
 def download_playlist_by_detial(playlist, folder='.'):
     if playlist is None:
         return
@@ -217,7 +225,7 @@ def download_playlist_by_detial(playlist, folder='.'):
         #playlist详情内含有完整的song
         download_song_by_detial(song, folder)
 
-
+# 根据专辑ID下载整张专辑
 def download_album_by_id(id, folder='.'):
     #根据album_id获取album详情
     album = get_album_by_id(id)
@@ -225,6 +233,7 @@ def download_album_by_id(id, folder='.'):
         return
     download_album_by_detial(album,folder)
 
+# 根据专辑详情<内含歌曲详情>下载整张专辑
 def download_album_by_detial(album, folder='.'):
     #print album
     if album is None:
@@ -300,6 +309,7 @@ def download_song_by_detial(song, folder='.'):
             time.sleep(1);
         resp.close();
 
+# 下载
 def retrieve_response(response, filepath, report_hook = None, block_size = 1024 * 32, ):
     total_size = response.info().getheader('Content-Length').strip()
     total_size = int(total_size)
@@ -333,6 +343,7 @@ def retrieve_response(response, filepath, report_hook = None, block_size = 1024 
         return False
     return True 
 
+# 进度条
 def show_process(downloaded_blocks, block_size, file_size):
     per = 100.0 * downloaded_blocks * block_size / file_size
     n = process_length
@@ -386,6 +397,8 @@ def download_song_by_search(name, folder='.'):
         else:
             download_song_by_id(songs[select_i-1]['id'], folder)
 
+
+# 根据专辑名查找并下载
 def download_album_by_search(name, folder='.'):
     albums = search_albums_by_keyword(name)
     if not albums:
@@ -410,6 +423,7 @@ def download_album_by_search(name, folder='.'):
         else:
             download_album_by_id(albums[select_i-1]['id'],folder)
 
+# 根据关键词查找并下载歌单
 def download_playlist_by_search(name, folder='.'):
     playlists = search_playlists_by_keyword(name)
     if not playlists:
