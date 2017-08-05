@@ -157,7 +157,7 @@ def search_artists_by_keyword(name):
             'type': 100,
             'offset': 0,
             'sub': 'false',
-            'limit': 10
+            'limit': 100
     }
     params = urllib.urlencode(params)
     resp = urllib2.urlopen(search_url, params)
@@ -328,8 +328,9 @@ def download_song_by_detial(song, folder='.'):
             else:
                 time.sleep(1);
             resp.close();
-        except:
+        except urllib2.URLError as e:
             print "Download failed %s" % url
+            print(e)
 
 # 下载
 def retrieve_response(response, filepath, report_hook = None, block_size = 1024 * 32, ):
@@ -423,9 +424,12 @@ def download_song_by_search(name, folder='.'):
 # 根据专辑名查找并下载
 def download_album_by_search(name, folder='.'):
     albums = search_albums_by_keyword(name)
+    interopt_download_albums(albums, folder)
+
+
+def interopt_download_albums(albums,folder):
     if not albums:
         return
-
     for i in range(len(albums)):
         album = albums[i]
         album_artist = album['artist']['name'].strip();
@@ -444,6 +448,7 @@ def download_album_by_search(name, folder='.'):
             return None
         else:
             download_album_by_id(albums[select_i-1]['id'],folder)
+
 
 # 根据关键词查找并下载歌单
 def download_playlist_by_search(name, folder='.'):
@@ -470,6 +475,27 @@ def download_playlist_by_search(name, folder='.'):
         else:
             download_playlist_by_id(playlists[select_i-1]['id'],folder)
 
+
+def download_albums_by_artist_search(name, folder='.'):
+    artists = search_artists_by_keyword(name)
+    if not artists:
+        return
+    for i in range(len(artists)):
+        artist = artists[i]
+        artist_name = artist['name'].strip();
+        albumSize = artist['albumSize'];
+        print '[%2d]\tartist:%s \t number of albums:%d' % (i+1, to_str(artist_name),albumSize)
+    #输入所选项
+    select = str(raw_input('Select One Artist:')).strip();
+    select_i = int(select)
+    if select_i < 1 or select_i > len(artists):
+        print 'error select'
+        return None
+    else:
+        albums = get_artist_albums(artists[select_i-1]['id'])
+        interopt_download_albums(albums, folder)
+
+
 def to_valid_path(string):
     #return string.replace('/','-')
     dic={
@@ -494,7 +520,7 @@ def to_str(unicode):
 if __name__ == '__main__':
     if len(sys.argv) != 4:
 	    #print 'usage : python %s keyword savepath' % (sys.argv[0])
-        stype = raw_input('Input type(song or album or playlist or playlistid):').decode(stdin_encode).strip()        
+        stype = raw_input('Input type(artist, song or album or playlist or playlistid):').decode(stdin_encode).strip()
         keyword = raw_input('Input keyword:').decode(stdin_encode).strip()
         savepath = raw_input('Input savepath:').decode(stdin_encode).strip()
         if savepath == '':
@@ -505,6 +531,8 @@ if __name__ == '__main__':
         savepath = sys.argv[3].decode(stdin_encode)
         if savepath == '':
             savepath = '.'
+    if stype == 'artist':
+        download_albums_by_artist_search(keyword, savepath)
     if stype == 'song':
         download_song_by_search(keyword, savepath)
     elif stype == 'album':
