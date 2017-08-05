@@ -35,6 +35,8 @@ process_length = int(50)
 #socket超时时间
 socket.setdefaulttimeout(10)
 
+DEBUG=False
+
 #set cookie
 cookie_opener = urllib2.build_opener()
 cookie_opener.addheaders.append(('Cookie', 'appver=2.0.2'))
@@ -178,7 +180,9 @@ def search_albums_by_keyword(name):
     params = urllib.urlencode(params)
     resp = urllib2.urlopen(search_url, params)
     resp_json = json.loads(resp.read())
-    #print str(resp_js)
+    if DEBUG:
+        print "Album Search response"
+        print json.dumps(resp_json)
     if resp_json['code'] == 200 and resp_json['result']['albumCount'] > 0:
         result = resp_json['result']
         return result['albums']
@@ -235,7 +239,8 @@ def download_album_by_id(id, folder='.'):
 
 # 根据专辑详情<内含歌曲详情>下载整张专辑
 def download_album_by_detial(album, folder='.'):
-    #print album
+    if DEBUG:
+        print json.dumps(album)
     if album is None:
         return
     print '[Start] artist:%s\talbum:%s' % (to_str(album['artist']['name']), to_str(album['name']))
@@ -246,12 +251,26 @@ def download_album_by_detial(album, folder='.'):
 
 #根据歌曲id下载歌曲
 def download_song_by_id(id, folder='.'):
-    song = get_song_by_id(id)
+    # song detail api 不再返回dsfId， 从album detail 接口去拿
+    # song = get_song_by_id(id)
+    song = get_song_from_album_by_id(id)
     download_song_by_detial(song, folder)
+
+def get_song_from_album_by_id(id):
+    song = get_song_by_id(id)
+    if song:
+        album = get_album_by_id(song['album']['id'])
+        if album:
+            songs = album['songs']
+            for songDetail in songs:
+                if songDetail['id'] == id:
+                    return songDetail
+    return
 
 #下载歌曲到指定目录
 def download_song_by_detial(song, folder='.'):
-    #print str(song)
+    if DEBUG:
+        print json.dumps(song)
     if song is None:
         return
     #首先创建专辑目录
@@ -298,16 +317,19 @@ def download_song_by_detial(song, folder='.'):
     if not song_dfsId:
         print 'ERROR: can not find music of song %s, continue next' % to_str(name)
         return
-    url = 'http://m%d.music.126.net/%s/%s.mp3' % (random.randrange(1, 3), encrypted_id(song_dfsId), song_dfsId)
+    url = 'http://p%d.music.126.net/%s/%s.mp3' % (random.randrange(1, 3), encrypted_id(song_dfsId), song_dfsId)
 
     for times in range(max_retry):
         print '%s\t%s\t%s' % (flag, url, to_str(name))
-        resp = urllib2.urlopen(url)
-        if retrieve_response(resp,fpath,show_process) == True:
-            break
-        else:
-            time.sleep(1);
-        resp.close();
+        try:
+            resp = urllib2.urlopen(url)
+            if retrieve_response(resp,fpath,show_process) == True:
+                break
+            else:
+                time.sleep(1);
+            resp.close();
+        except:
+            print "Download failed %s" % url
 
 # 下载
 def retrieve_response(response, filepath, report_hook = None, block_size = 1024 * 32, ):
