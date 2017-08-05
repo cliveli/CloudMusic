@@ -1,8 +1,13 @@
 CloudMusic
 =================
 
+### Python2
+
+
+
 usage:  
 python ClouldMusic.py `type` `keyword` `savepath`  
+
 * type:  
    * song  
    * album  
@@ -13,3 +18,9 @@ python ClouldMusic.py `type` `keyword` `savepath`
    * keyword when type is other  
 * savepath:  
    * local path to save songs  
+
+
+
+### Python3
+
+python CloudMusicPy3.py `type` `keyword` `savepath
