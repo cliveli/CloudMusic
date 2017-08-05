@@ -228,8 +228,9 @@ def download_playlist_by_detial(playlist, folder='.'):
     print('[Start] creator:%s\tplaylist:%s' % (to_str(playlist['creator']['nickname']), to_str(playlist['name'])))
     songs = playlist['tracks']
     for song in songs:
-        #playlist详情内含有完整的song
-        download_song_by_detial(song, folder)
+        #playlist详情内没有完整的song @2017.08.05
+        detail = get_song_detail_from_album_by_brief_song(song)
+        download_song_by_detial(detail, folder)
 
 # 根据专辑ID下载整张专辑
 def download_album_by_id(id, folder='.'):
@@ -260,14 +261,17 @@ def download_song_by_id(id, folder='.'):
 
 def get_song_from_album_by_id(id):
     song = get_song_by_id(id)
-    if song:
-        album = get_album_by_id(song['album']['id'])
+    return get_song_detail_from_album_by_brief_song(song)
+
+
+def get_song_detail_from_album_by_brief_song(brief):
+    if brief:
+        album = get_album_by_id(brief['album']['id'])
         if album:
             songs = album['songs']
             for songDetail in songs:
-                if songDetail['id'] == id:
+                if songDetail['id'] == brief['id']:
                     return songDetail
-    return
 
 #下载歌曲到指定目录
 def download_song_by_detial(song, folder='.'):
