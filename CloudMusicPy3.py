@@ -158,7 +158,7 @@ def search_artists_by_keyword(name):
             'type': 100,
             'offset': 0,
             'sub': 'false',
-            'limit': 10
+            'limit': 50
     }
     params = urllib.parse.urlencode(params).encode('UTF8')
     resp = urllib.request.urlopen(search_url, params)
@@ -245,8 +245,8 @@ def download_album_by_detial(album, folder='.'):
         print(json.dumps(album))
     if album is None:
         return
-    print('[Start] artist:%s\talbum:%s' % (to_str(album['artist']['name']), to_str(album['name'])))
     songs = album['songs']
+    print('[Start] artist:%s\talbum:%s \t # of songs:%d' % (to_str(album['artist']['name']), to_str(album['name']),len(songs)))
     for song in songs:
         #album详情内含有完整的song
         download_song_by_detial(song, folder)
@@ -428,6 +428,9 @@ def download_song_by_search(name, folder='.'):
 # 根据专辑名查找并下载
 def download_album_by_search(name, folder='.'):
     albums = search_albums_by_keyword(name)
+    interopt_download_albums(albums, folder)
+
+def interopt_download_albums(albums, folder):
     if not albums:
         return
 
@@ -476,6 +479,26 @@ def download_playlist_by_search(name, folder='.'):
         else:
             download_playlist_by_id(playlists[select_i-1]['id'],folder)
 
+def download_albums_by_artist_search(name, folder='.'):
+    artists = search_artists_by_keyword(name)
+    if not artists:
+        return
+    for i in range(len(artists)):
+        artist = artists[i]
+        artist_name = artist['name'].strip();
+        albumSize = artist['albumSize'];
+        print ('[%2d]\tartist:%s, \t number of albums:%2d' % (i + 1, to_str(artist_name), albumSize))
+    # 输入所选项
+    select = bytes(input('Select One:'), encoding='utf-8').decode('utf-8').strip()
+    select_i = int(select)
+    if select_i < 1 or select_i > len(artists):
+        print ('error select')
+        return None
+    else:
+        albums = get_artist_albums(artists[select_i - 1]['id'])
+        interopt_download_albums(albums, folder)
+
+
 def to_valid_path(string):
     #return string.replace('/','-')
     dic={
@@ -501,7 +524,7 @@ def to_str(unicode):
 if __name__ == '__main__':
     if len(sys.argv) != 4:
 	    #print 'usage : python %s keyword savepath' % (sys.argv[0])
-        stype = bytes(input('Input type(song or album or playlist or playlistid):'), encoding='utf-8').decode('utf-8').strip()
+        stype = bytes(input('Input type(artist or song or album or playlist or playlistid):'), encoding='utf-8').decode('utf-8').strip()
         keyword = bytes(input('Input keyword:'), encoding='utf-8').decode('utf-8').strip()
         savepath = bytes(input('Input savepath:'), encoding='utf-8').decode('utf-8').strip()
         if savepath == '':
@@ -512,6 +535,8 @@ if __name__ == '__main__':
         savepath = bytes(sys.argv[3], encoding='utf-8').decode('utf-8')
         if savepath == '':
             savepath = '.'
+    if stype == 'artist':
+        download_albums_by_artist_search(keyword, savepath)
     if stype == 'song':
         download_song_by_search(keyword, savepath)
     elif stype == 'album':

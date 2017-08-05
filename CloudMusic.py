@@ -243,8 +243,8 @@ def download_album_by_detial(album, folder='.'):
         print json.dumps(album)
     if album is None:
         return
-    print '[Start] artist:%s\talbum:%s' % (to_str(album['artist']['name']), to_str(album['name']))
     songs = album['songs']
+    print '[Start] artist:%s\talbum:%s \t # of songs: %d' % (to_str(album['artist']['name']), to_str(album['name']),len(songs))
     for song in songs:
         #album详情内含有完整的song
         download_song_by_detial(song, folder)
@@ -434,7 +434,7 @@ def interopt_download_albums(albums,folder):
         album = albums[i]
         album_artist = album['artist']['name'].strip();
         album_name = album['name'].strip();
-        print '[%2d]\tartist:%s\talbum:%s' % (i+1, to_str(album_artist), to_str(album_name))
+        print '[%2d]\tartist:%s\t album size:%d\talbum:%s ' % (i+1, to_str(album_artist),album['size'], to_str(album_name))
 
     #输入所选项
     select = str(raw_input('Select One(Empty for all):')).strip();
@@ -520,7 +520,7 @@ def to_str(unicode):
 if __name__ == '__main__':
     if len(sys.argv) != 4:
 	    #print 'usage : python %s keyword savepath' % (sys.argv[0])
-        stype = raw_input('Input type(artist, song or album or playlist or playlistid):').decode(stdin_encode).strip()
+        stype = raw_input('Input type(artist or song or album or playlist or playlistid):').decode(stdin_encode).strip()
         keyword = raw_input('Input keyword:').decode(stdin_encode).strip()
         savepath = raw_input('Input savepath:').decode(stdin_encode).strip()
         if savepath == '':
